@@ -1,9 +1,9 @@
 {
-    "name": "tustin/fortnite-php",
+    "name": "IareTedd/fortnite-api",
     "license": "MIT",
     "description": "PHP wrapper for the official Fortnite API.",
-    "homepage": "https://github.com/Tustin/fortnite-php",
-    "keywords": ["fortnite", "api", "php"],
+    "homepage": "https://github.com/Pash88/fortnite-api",
+    "keywords": ["epic games","fortnite", "api", "php"],
     "autoload": {
         "classmap": [
             "src/"
