@@ -1,4 +1,5 @@
 <?php
+
 namespace Fortnite;
 
 use Fortnite\FortniteClient;
@@ -11,7 +12,8 @@ use Fortnite\Exception\StatsNotFoundException;
 
 use GuzzleHttp\Exception\GuzzleException;
 
-class Stats {
+class Stats
+{
     private $access_token;
     public $account_id;
     public $display_name;
@@ -22,10 +24,15 @@ class Stats {
 
     /**
      * Constructs a new Fortnite\Stats instance.
+     *
      * @param string $access_token OAuth2 Access token
-     * @param string $account_id   Epic account id
+     * @param string $account_id Epic account id
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws GuzzleException
      */
-    public function __construct($access_token, $account_id) {
+    public function __construct($access_token, $account_id)
+    {
         $this->access_token = $access_token;
         $this->account_id = $account_id;
         $data = $this->fetch($this->account_id);
@@ -36,17 +43,23 @@ class Stats {
 
     /**
      * Fetches stats for the current user.
-     * @param  string $account_id   Account id
-     * @return object               The stats data
+     *
+     * @param string $account_id Account id
+     *
+     * @return array|null The stats data
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws GuzzleException
      */
-    private function fetch($account_id) {
+    public function fetch($account_id)
+    {
         if (!$account_id) return null;
 
         $data = FortniteClient::sendFortniteGetRequest(FortniteClient::FORTNITE_API . 'stats/accountId/' . $account_id . '/bulk/window/alltime',
-                                                     $this->access_token);
+            $this->access_token);
 
         // Remove - from account ID and get it's display name
-        $this->display_name = Account::getDisplayNameFromID(str_replace("-","",$this->account_id), $this->access_token);
+        $this->display_name = Account::getDisplayNameFromID(str_replace("-", "", $this->account_id), $this->access_token);
         //if (!count($data)) throw new StatsNotFoundException('Unable to find any stats for account id '. $account_id);
 
         // Loop over all the stat objects and compile them together cleanly
@@ -67,13 +80,20 @@ class Stats {
 
     /**
      * Lookup a user by their Epic display name.
-     * @param  string $username Display name to search
+     *
+     * @param string $username Display name to search
+     *
      * @return object           New instance of Fortnite\Stats
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws GuzzleException
+     * @throws UserNotFoundException
      */
-    public function lookup($username) {
+    public function lookup($username)
+    {
         try {
             $data = FortniteClient::sendFortniteGetRequest(FortniteClient::FORTNITE_PERSONA_API . 'public/account/lookup?q=' . urlencode($username),
-                                                        $this->access_token);
+                $this->access_token);
             return new self($this->access_token, $data->id);
         } catch (GuzzleException $e) {
             if ($e->getResponse()->getStatusCode() == 404) throw new UserNotFoundException('User ' . $username . ' was not found.');
@@ -82,10 +102,11 @@ class Stats {
     }
 
     //TODO (Tustin): Make this not redundant
-    public static function lookupWithToken($username, $access_token) {
+    public static function lookupWithToken($username, $access_token)
+    {
         try {
             $data = FortniteClient::sendFortniteGetRequest(FortniteClient::FORTNITE_PERSONA_API . 'public/account/lookup?q=' . urlencode($username),
-                                                        $access_token);
+                $access_token);
             return new self($access_token, $data->id);
         } catch (GuzzleException $e) {
             if ($e->getResponse()->getStatusCode() == 404) throw new UserNotFoundException('User ' . $username . ' was not found.');
@@ -95,10 +116,13 @@ class Stats {
 
     /**
      * Parses a stat string into a mapped array.
-     * @param  string $stat The stat string
+     *
+     * @param string $stat The stat string
+     *
      * @return array        The mapped stat array
      */
-    private function parseStatItem($stat): array {
+    private function parseStatItem($stat): array
+    {
         //
         // Example stat name:
         // br_placetop5_ps4_m0_p10
@@ -110,7 +134,8 @@ class Stats {
         return $result;
     }
 
-    public function accountId() {
+    public function accountId()
+    {
         return $this->account_id;
     }
 

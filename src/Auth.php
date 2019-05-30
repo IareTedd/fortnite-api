@@ -1,12 +1,15 @@
 <?php
+
 namespace Fortnite;
+
 
 use Fortnite\FortniteClient;
 use Fortnite\Profile;
 use Fortnite\Status;
 use Fortnite\Exception\TwoFactorAuthRequiredException;
 
-class Auth {
+class Auth
+{
     private $access_token;
     private $in_app_id;
     private $refresh_token;
@@ -14,31 +17,41 @@ class Auth {
     private $expires_in;
 
     public $profile;
-
+    public $account;
+    public $status;
+    public $leaderboard;
+    public $store;
+    public $news;
 
 
     // TODO: Probably want to lazy load all of these object initializations. Although currently I'm not sure how to go about that with PHP.
     // @Tustin 7/28/2018
     /**
      * Constructs a new Fortnite\Auth instance.
-     * @param string $access_token  OAuth2 access token
+     *
+     * @param string $access_token OAuth2 access token
+     * @param $in_app_id
      * @param string $refresh_token OAuth2 refresh token
-     * @param string $account_id    Unreal Engine account id
-     * @param string $expires_in    OAuth2 token expiration time
+     * @param string $account_id Unreal Engine account id
+     * @param string $expires_in OAuth2 token expiration time
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    private function __construct($access_token, $in_app_id, $refresh_token, $account_id, $expires_in) {
+    private function __construct($access_token, $in_app_id, $refresh_token, $account_id, $expires_in)
+    {
         $this->access_token = $access_token;
         $this->in_app_id = $in_app_id;
         $this->refresh_token = $refresh_token;
         $this->account_id = $account_id;
         $this->expires_in = $expires_in;
-        $this->account = new Account($this->access_token,$this->account_id);
+        $this->account = new Account($this->access_token, $this->account_id);
         $this->status = new Status($this->access_token);
-        if ($this->status->allowedToPlay() === false){
+        if ($this->status->allowedToPlay() === false) {
             $this->account->acceptEULA();
         }
         $this->profile = new Profile($this->access_token, $this->account_id);
-        $this->leaderboard  = new Leaderboard($this->access_token, $this->in_app_id, $this->account);
+        $this->leaderboard = new Leaderboard($this->access_token, $this->in_app_id, $this->account);
         $this->store = new Store($this->access_token);
         $this->news = new News($this->access_token);
     }
@@ -46,14 +59,20 @@ class Auth {
     /**
      * Login using Unreal Engine credentials to access Fortnite API.
      *
-     * @param      string     $email     The account email
-     * @param      string     $password  The account password
+     * @param string $email The account email
+     * @param string $password The account password
      *
-     * @throws     Exception  Throws exception on API response errors (might get overridden by Guzzle exceptions)
+     * @param string $challenge
+     * @param string $code
      *
-     * @return     self       New Auth instance
+     * @return self New Auth instance
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws TwoFactorAuthRequiredException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function login($email, $password, $challenge = '', $code = '') {
+    public static function login($email, $password, $challenge = '', $code = '')
+    {
 
         $requestParams = [
             'includePerms' => 'false', // We don't need these here
@@ -110,10 +129,16 @@ class Auth {
 
     /**
      * Refreshes OAuth2 tokens using an existing refresh token.
-     * @param  string $refresh_token Exisiting OAuth2 refresh token
-     * @return self                New Auth instance
+     *
+     * @param string $refresh_token Exisiting OAuth2 refresh token
+     *
+     * @return self New Auth instance
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function refresh($refresh_token) {
+    public static function refresh($refresh_token)
+    {
         $data = FortniteClient::sendUnrealClientPostRequest(FortniteClient::EPIC_OAUTH_TOKEN_ENDPOINT, [
             'grant_type' => 'refresh_token',
             'refresh_token' => $refresh_token,
@@ -125,34 +150,41 @@ class Auth {
             throw new \Exception($data->errorMessage);
         }
 
-       return new self($data->access_token, $data->in_app_id, $data->refresh_token, $data->account_id, $data->expires_in);
+        return new self($data->access_token, $data->in_app_id, $data->refresh_token, $data->account_id, $data->expires_in);
     }
 
     /**
      * Returns current refresh token.
+     *
      * @return string OAuth2 refresh token
      */
-    public function refreshToken() {
+    public function refreshToken()
+    {
         return $this->refresh_token;
     }
 
     /**
      * Returns the time until the OAuth2 access token expires.
+     *
      * @return string Time until OAuth2 access token expires (in seconds)
      */
-    public function expiresIn() {
+    public function expiresIn()
+    {
         return $this->expires_in;
     }
 
     /**
      * Returns current access token.
+     *
      * @return string OAuth2 access token
      */
-    public function accessToken() {
+    public function accessToken()
+    {
         return $this->access_token;
     }
 
-    public function inAppId() {
+    public function inAppId()
+    {
         return $this->in_app_id;
     }
 }

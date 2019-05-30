@@ -1,13 +1,16 @@
 <?php
+
 namespace Fortnite;
 
 use Fortnite\FortniteClient;
 
 use Fortnite\Model\Items;
 
-class Profile {
+class Profile
+{
     private $access_token;
-    private $account_id;
+
+    public $account_id;
 
     public $stats;
     public $items;
@@ -15,10 +18,15 @@ class Profile {
 
     /**
      * Constructs a new Fortnite\Profile instance.
+     *
      * @param string $access_token OAuth2 Access token
-     * @param string $account_id   Epic account id
+     * @param string $account_id Epic account id
+     *
+     * @throws Exception\InvalidGameModeException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function __construct($access_token, $account_id) {
+    public function __construct($access_token, $account_id)
+    {
         $this->access_token = $access_token;
         $this->account_id = $account_id;
         $data = $this->fetch();
@@ -30,20 +38,28 @@ class Profile {
 
     /**
      * Fetches profile data.
+     *
      * @return object Profile data
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    private function fetch() {
+    public function fetch()
+    {
         $data = FortniteClient::sendFortnitePostRequest(FortniteClient::FORTNITE_API . 'game/v2/profile/' . $this->account_id . '/client/QueryProfile?profileId=athena&rvn=-1',
-                                                        $this->access_token,
-                                                        new \StdClass());
+            $this->access_token,
+            new \StdClass());
         return $data->profileChanges[0]->profile;
     }
 
     /**
      * Get current user's friends on Unreal Engine.
-     * @return array    Array of friends
+     *
+     * @return object Array of friends
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getFriends() {
+    public function getFriends()
+    {
         $data = FortniteClient::sendUnrealClientGetRequest(FortniteClient::EPIC_FRIENDS_ENDPOINT . $this->account_id, $this->access_token, true);
 
         return $data;

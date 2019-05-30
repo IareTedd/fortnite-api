@@ -13,7 +13,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "php": "^7.2",
         "phpunit/phpunit": "8.1.5",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ext-json": "*"
     },
     "scripts": {
         "test": "php tests/auth.php"
