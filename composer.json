@@ -11,7 +11,9 @@
     },
     "require": {
         "guzzlehttp/guzzle": "^6.3",
-        "php": "^7.0"
+        "php": "^7.2",
+        "phpunit/phpunit": "8.1.5",
+        "ext-mbstring": "*"
     },
     "scripts": {
         "test": "php tests/auth.php"
