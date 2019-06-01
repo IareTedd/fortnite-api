@@ -54,13 +54,50 @@ class Profile
     /**
      * Get current user's friends on Unreal Engine.
      *
+     * @param bool $includePending Include pending friend requests
+     *
      * @return object Array of friends
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getFriends()
+    public function getFriends($includePending = true)
     {
-        $data = FortniteClient::sendUnrealClientGetRequest(FortniteClient::EPIC_FRIENDS_ENDPOINT . $this->account_id, $this->access_token, true);
+        $endpoint = FortniteClient::EPIC_FRIENDS_ENDPOINT . $this->account_id . ($includePending ? '?includePending=true' : '');
+        $data = FortniteClient::sendUnrealClientGetRequest($endpoint, $this->access_token, true);
+
+        return $data;
+    }
+
+    /**
+     * Sends or accepts friend request on Unreal Engine.
+     *
+     * @param $accountId Friend's Account Id
+     *
+     * @return null
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function addFriend($accountId)
+    {
+        $endpoint = FortniteClient::EPIC_FRIENDS_ENDPOINT . $this->account_id . '/' . $accountId;
+        $data = FortniteClient::sendUnrealClientPostRequest($endpoint, null, $this->access_token, true);
+
+        return $data;
+    }
+
+    /**
+     * Removes friend from a friend list on Unreal Engine.
+     *
+     * @param $accountId Friend's Account Id
+     *
+     * @return int 204 on success
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function removeFriend($accountId)
+    {
+        $endpoint = FortniteClient::EPIC_FRIENDS_ENDPOINT . $this->account_id . '/' . $accountId;
+        $data = FortniteClient::sendFortniteDeleteRequest($endpoint, $this->access_token, true);
 
         return $data;
     }
