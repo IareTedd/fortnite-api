@@ -2,11 +2,11 @@
 Interact with the official Fortnite API using PHP.
 
 [![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
-[![Packagist](https://img.shields.io/packagist/v/Tustin/fortnite-php.svg)]()
+[![Packagist](https://img.shields.io/packagist/v/iaretedd/fortnite-api.svg)]()
 
 ## Installation
 Pull in the project using composer:
-`composer require Tustin/fortnite-php`
+`composer require iaretedd/fortnite-api`
 
 ## Usage
 Create a basic test script to ensure everything was installed properly
@@ -32,6 +32,28 @@ $sandy = $auth->profile->stats->lookup('sandalzrevenge');
 echo 'Sandy Ravage has won ' . $sandy->pc->solo->wins . ' solo games and ' . $sandy->pc->squad->wins . ' squad games!';
 ```
 
+### Friends
+```php
+$auth = Auth::login('epic_email@domain.com','password');
+
+// Get list of friends
+// Params:
+//  - boolean $includePending If set to false, friend requests will be removed from output.
+var_dump($auth->profile->getFriends());
+
+// Add user to a friendlist
+// Params:
+// - string $accountId Account Id of a user that you're going to add
+$auth->profile->addFriend($accountId);
+
+// Remove user from a friendlist
+// Params:
+// - string $accountId Account Id of a user that you're going to remove
+// Returns int 204 on success
+$successfullyRemoved = $auth->profile->removeFriend($accountId) === 204;
+
+
+```
 ### Get Leaderboards
 ```php
 $auth = Auth::login('epic_email@domain.com','password');
